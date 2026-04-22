@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { LatLngTuple } from "leaflet";
+
+// ✅ Define type locally (fixes Vercel build issue)
+type LatLngTuple = [number, number];
 
 const Polyline = dynamic(
   () => import("react-leaflet").then((m) => m.Polyline),
