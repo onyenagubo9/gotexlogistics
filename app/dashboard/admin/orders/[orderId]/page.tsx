@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   doc,
   getDoc,
@@ -14,6 +14,8 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ArrowLeft, Edit3 } from "lucide-react";
+import EditOrderModal from "@/components/admin/EditOrderModal"; // Ensure you create this file
 
 /* ================= TYPES ================= */
 
@@ -53,18 +55,18 @@ type Order = {
   };
 };
 
-/* ================= PAGE ================= */
-
 export default function AdminOrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const router = useRouter();
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const [order, setOrder] = useState<Order | null>(null);
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Form States for Updates
+  // Form States for Quick Updates (Status/Location)
   const [status, setStatus] = useState("in_transit");
   const [newLat, setNewLat] = useState<number>(0);
   const [newLng, setNewLng] = useState<number>(0);
@@ -76,8 +78,6 @@ export default function AdminOrderDetailsPage() {
       const snap = await getDoc(doc(db, "orders", orderId));
       if (snap.exists()) {
         const data = snap.data();
-        
-        // FIX: Spread data first, then assign ID to avoid TS2783 error
         const orderData = { ...data, id: snap.id } as Order;
         
         setOrder(orderData);
@@ -104,40 +104,34 @@ export default function AdminOrderDetailsPage() {
     fetchData();
   }, [orderId]);
 
-  /* ---------- PDF DOWNLOAD (Color-Safe Version) ---------- */
+  /* ---------- PDF DOWNLOAD ---------- */
   const downloadPDF = async () => {
     if (!receiptRef.current) return;
     setIsDownloading(true);
-
     try {
       const jsPDF = (await import("jspdf")).default;
       const html2canvas = (await import("html2canvas")).default;
-
       const canvas = await html2canvas(receiptRef.current, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
-        logging: false,
       });
-
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "px",
         format: [canvas.width, canvas.height],
       });
-
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
       pdf.save(`Waybill-${order?.trackingNumber}.pdf`);
     } catch (error) {
       console.error("PDF Error:", error);
-      alert("PDF Error: Please ensure no modern CSS colors (lab/lch) are active.");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  /* ---------- UPDATE ACTIONS ---------- */
+  /* ---------- QUICK UPDATES ---------- */
   async function updateStatus() {
     if (!order) return;
     await updateDoc(doc(db, "orders", order.id), {
@@ -172,18 +166,37 @@ export default function AdminOrderDetailsPage() {
 
   return (
     <main className="p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
-      <div className="max-w-5xl mx-auto flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Logistics Control</h1>
-          <p className="text-sm text-gray-500">ID: {order.id}</p>
+      {/* HEADER SECTION */}
+      <div className="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-4">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Logistics Control</h1>
+            <p className="text-sm text-gray-500 font-mono">ORDER_ID: {order.id}</p>
+          </div>
         </div>
-        <button 
-          onClick={downloadPDF}
-          disabled={isDownloading}
-          className="bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 disabled:bg-gray-300 transition-all shadow-lg"
-        >
-          {isDownloading ? "PROCESSING..." : "EXPORT PDF WAYBILL"}
-        </button>
+
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-2 bg-white border-2 border-black text-black px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-all shadow-sm"
+          >
+            <Edit3 className="w-4 h-4" />
+            EDIT DATA
+          </button>
+          <button 
+            onClick={downloadPDF}
+            disabled={isDownloading}
+            className="bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 disabled:bg-gray-300 transition-all shadow-lg"
+          >
+            {isDownloading ? "PROCESSING..." : "EXPORT PDF WAYBILL"}
+          </button>
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -247,7 +260,7 @@ export default function AdminOrderDetailsPage() {
         </div>
       </div>
 
-      {/* ISOLATED RECEIPT TEMPLATE (SAFE COLORS) */}
+      {/* WAYBILL PREVIEW */}
       <div className="max-w-4xl mx-auto py-10">
         <div 
           ref={receiptRef} 
@@ -261,6 +274,7 @@ export default function AdminOrderDetailsPage() {
             border: "1px solid #dddddd"
           }}
         >
+          {/* ... Receipt Content exactly as you had it ... */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "60px" }}>
             <div>
               <h1 style={{ margin: 0, fontSize: "36px", fontWeight: "900", color: "#cc0000", letterSpacing: "-1.5px" }}>GOTEX</h1>
@@ -303,9 +317,9 @@ export default function AdminOrderDetailsPage() {
           </div>
 
           <div style={{ padding: "25px", border: "1px solid #eeeeee", marginBottom: "40px" }}>
-             <p style={{ margin: 0, fontSize: "10px", color: "#888888", textTransform: "uppercase" }}>Current Global Position</p>
-             <p style={{ margin: "5px 0 0 0", fontSize: "16px", fontWeight: "bold" }}>{order.tracking?.currentLocation?.address}</p>
-             <p style={{ margin: "5px 0 0 0", fontSize: "12px", color: "#888888" }}>GPS: {order.tracking?.currentLocation?.lat}, {order.tracking?.currentLocation?.lng}</p>
+              <p style={{ margin: 0, fontSize: "10px", color: "#888888", textTransform: "uppercase" }}>Current Global Position</p>
+              <p style={{ margin: "5px 0 0 0", fontSize: "16px", fontWeight: "bold" }}>{order.tracking?.currentLocation?.address}</p>
+              <p style={{ margin: "5px 0 0 0", fontSize: "12px", color: "#888888" }}>GPS: {order.tracking?.currentLocation?.lat}, {order.tracking?.currentLocation?.lng}</p>
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "30px", backgroundColor: "#000000", color: "#ffffff" }}>
@@ -318,6 +332,14 @@ export default function AdminOrderDetailsPage() {
           </p>
         </div>
       </div>
+
+      {/* EDIT MODAL INTEGRATION */}
+      <EditOrderModal 
+        open={isEditModalOpen}
+        order={order}
+        onClose={() => setIsEditModalOpen(false)}
+        onUpdated={fetchData}
+      />
     </main>
   );
 }
