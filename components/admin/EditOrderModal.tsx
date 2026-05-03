@@ -98,7 +98,7 @@ export default function EditOrderModal({ open, order, onClose, onUpdated }: Prop
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-100 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
       <div className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden">
