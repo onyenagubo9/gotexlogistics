@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { ArrowLeft, Edit3 } from "lucide-react";
-import EditOrderModal from "@/components/admin/EditOrderModal"; // Ensure you create this file
+import EditOrderModal from "@/components/admin/EditOrderModal";
 
 /* ================= TYPES ================= */
 
@@ -66,7 +66,7 @@ export default function AdminOrderDetailsPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Form States for Quick Updates (Status/Location)
+  // Form States
   const [status, setStatus] = useState("in_transit");
   const [newLat, setNewLat] = useState<number>(0);
   const [newLng, setNewLng] = useState<number>(0);
@@ -134,15 +134,21 @@ export default function AdminOrderDetailsPage() {
   /* ---------- QUICK UPDATES ---------- */
   async function updateStatus() {
     if (!order) return;
+
+    // Formats 'on_hold' to 'On Hold' for the timeline message
+    const readableStatus = status.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+
     await updateDoc(doc(db, "orders", order.id), {
       status,
       updatedAt: serverTimestamp(),
     });
+
     await addDoc(collection(db, "orders", order.id, "timeline"), {
       status,
-      message: `Order marked as ${status.replace("_", " ")}`,
+      message: `Order marked as ${readableStatus}`,
       timestamp: serverTimestamp(),
     });
+
     alert("✅ Status updated");
     fetchData();
   }
@@ -251,6 +257,7 @@ export default function AdminOrderDetailsPage() {
           >
             <option value="assigned">ASSIGNED</option>
             <option value="in_transit">IN TRANSIT</option>
+            <option value="on_hold">ON HOLD</option>
             <option value="out_for_delivery">OUT FOR DELIVERY</option>
             <option value="delivered">DELIVERED</option>
           </select>
@@ -274,7 +281,6 @@ export default function AdminOrderDetailsPage() {
             border: "1px solid #dddddd"
           }}
         >
-          {/* ... Receipt Content exactly as you had it ... */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "60px" }}>
             <div>
               <h1 style={{ margin: 0, fontSize: "36px", fontWeight: "900", color: "#cc0000", letterSpacing: "-1.5px" }}>GOTEX</h1>
@@ -312,7 +318,7 @@ export default function AdminOrderDetailsPage() {
             </div>
             <div style={{ padding: "25px", backgroundColor: "#f4f4f4" }}>
               <p style={{ margin: 0, fontSize: "10px", color: "#888888", textTransform: "uppercase" }}>System Status</p>
-              <p style={{ margin: "5px 0 0 0", fontSize: "16px", fontWeight: "bold", color: "#cc0000" }}>{order.status.toUpperCase()}</p>
+              <p style={{ margin: "5px 0 0 0", fontSize: "16px", fontWeight: "bold", color: "#cc0000" }}>{order.status.toUpperCase().replace("_", " ")}</p>
             </div>
           </div>
 
