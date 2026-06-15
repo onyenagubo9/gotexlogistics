@@ -12,9 +12,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 1. Your updated metadata object with the icons property added
 export const metadata: Metadata = {
   title: "Gotex Logistics",
-  description: "Delivery company - track your shipment ",
+  description: "Delivery company - track your shipment",
+  icons: {
+    icon: "/images/gotexlogo.png", // 👈 This sets your main tab icon (can be .ico, .png, or .svg)
+    // apple: "/apple-icon.png", // Optional: For iOS home screen shortcuts
+  },
 };
 
 export default function RootLayout({

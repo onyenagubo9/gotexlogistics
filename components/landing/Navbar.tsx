@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Truck, MapPin, LogIn } from "lucide-react";
+import { Truck, MapPin, LogIn, Phone } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -29,6 +29,17 @@ export default function Navbar() {
 
         {/* Navigation */}
         <nav className="flex items-center gap-6 text-sm font-semibold text-gray-900">
+          {/* Phone Number */}
+          <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+            <a
+              href="tel:+17253591155"
+              className="flex items-center gap-1 hover:underline text-gray-900"
+            >
+              <Phone className="w-4 h-4" />
+              +1 (725) 359-1155
+            </a>
+          </motion.div>
+
           {/* Track */}
           <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
             <Link

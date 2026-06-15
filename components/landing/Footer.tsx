@@ -1,6 +1,6 @@
 "use client";
 
-import { Facebook, Twitter, Instagram, Linkedin, ArrowUp, Send } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, ArrowUp, Send, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Footer() {
@@ -39,7 +39,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
           
           {/* Brand Column */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div>
               <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">
                 Gotex<span className="text-slate-800/40">Logistics</span>
@@ -61,6 +61,17 @@ export default function Footer() {
                   <social.icon className="w-5 h-5" />
                 </motion.a>
               ))}
+            </div>
+
+            {/* Clickable Phone Link */}
+            <div className="pt-2">
+              <a 
+                href="tel:+17253591155"
+                className="inline-flex items-center gap-2 font-bold text-sm bg-slate-950 text-yellow-400 px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-all shadow-md group"
+              >
+                <Phone className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
+                <span>+1 (725) 359-1155</span>
+              </a>
             </div>
           </div>
 
