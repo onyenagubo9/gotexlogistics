@@ -36,7 +36,7 @@ export default function Navbar() {
               className="flex items-center gap-1 hover:underline text-gray-900"
             >
               <Phone className="w-4 h-4" />
-              +1 (725) 359-1155
+              +6444881839
             </a>
           </motion.div>
 
