@@ -41,7 +41,7 @@ export default function CreateOrderModal({
         insuranceAmount: Number(form.get("insuranceAmount")) || 0,
 
         payment: {
-          status: "unpaid",
+          status: form.get("paymentStatus"),
           method: form.get("paymentMethod"),
           currency: form.get("currency"),
           amount: Number(form.get("amount")),
@@ -142,6 +142,11 @@ export default function CreateOrderModal({
 
           {/* PAYMENT */}
           <Section title="Payment">
+            <Select 
+              name="paymentStatus" 
+              label="Payment Status" 
+              options={["unpaid", "paid", "pending", "failed"]} 
+            />
             <Select name="paymentMethod" label="Payment Method" options={["Card", "Transfer", "Cash", "Crypto"]} />
             <Select name="currency" label="Currency" options={["USD", "EUR", "GBP"]} />
             <Input name="amount" label="Total Amount" type="number" />
@@ -262,7 +267,7 @@ function Select({ label, name, options }: any) {
       <select
         name={name}
         required
-        className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 outline-none"
+        className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 outline-none capitalize"
       >
         <option value="">Select</option>
         {options.map((o: string) => (

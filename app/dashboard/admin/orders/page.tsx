@@ -6,11 +6,12 @@ import {
   collection,
   getDocs,
   updateDoc,
+  deleteDoc,
   doc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import CreateOrderModal from "@/components/admin/CreateOrderModal";
 
 /* ---------------- TYPES ---------------- */
@@ -85,6 +86,21 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }
 
+  /* -------- DELETE ORDER -------- */
+  async function handleDeleteOrder(orderId: string) {
+    if (!window.confirm("Are you sure you want to delete this order?")) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "orders", orderId));
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      alert("Failed to delete order.");
+    }
+  }
+
   if (loading) {
     return <p className="p-6">Loading orders…</p>;
   }
@@ -112,6 +128,7 @@ export default function AdminOrdersPage() {
             rounded-xl
             flex items-center gap-2
             shadow-md
+            cursor-pointer
           "
         >
           <Plus className="w-4 h-4" />
@@ -139,6 +156,7 @@ export default function AdminOrdersPage() {
                 <th className="p-3 text-left">Tracking</th>
                 <th className="p-3 text-left">Details</th>
                 <th className="p-3 text-left">Assign Rider</th>
+                <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
 
@@ -181,7 +199,7 @@ export default function AdminOrdersPage() {
                         onChange={(e) =>
                           assignRider(o.id, e.target.value)
                         }
-                        className="border rounded px-2 py-1"
+                        className="border rounded px-2 py-1 cursor-pointer"
                       >
                         <option value="" disabled>
                           Assign rider
@@ -197,6 +215,16 @@ export default function AdminOrdersPage() {
                         Assigned
                       </span>
                     )}
+                  </td>
+
+                  <td className="p-3 text-right">
+                    <button
+                      onClick={() => handleDeleteOrder(o.id)}
+                      className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                      title="Delete Order"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -227,9 +255,9 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${map[status]}`}
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${map[status] || "bg-gray-100 text-gray-700"}`}
     >
-      {status.replace("_", " ")}
+      {status ? status.replace("_", " ") : "unknown"}
     </span>
   );
 }

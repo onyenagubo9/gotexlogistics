@@ -36,6 +36,7 @@ export default function EditOrderModal({ open, order, onClose, onUpdated }: Prop
 
         payment: {
           ...order.payment,
+          status: form.get("paymentStatus"),
           method: form.get("paymentMethod"),
           currency: form.get("currency"),
           amount: Number(form.get("amount")),
@@ -124,6 +125,12 @@ export default function EditOrderModal({ open, order, onClose, onUpdated }: Prop
           </Section>
 
           <Section title="Payment">
+            <Select 
+              name="paymentStatus" 
+              label="Payment Status" 
+              options={["unpaid", "paid", "pending", "failed"]} 
+              defaultValue={order.payment?.status} 
+            />
             <Select name="paymentMethod" label="Payment Method" options={["Card", "Transfer", "Cash", "Crypto"]} defaultValue={order.payment?.method} />
             <Select name="currency" label="Currency" options={["USD", "EUR", "GBP"]} defaultValue={order.payment?.currency} />
             <Input name="amount" label="Total Amount" type="number" defaultValue={order.payment?.amount} />
@@ -224,7 +231,7 @@ function Select({ label, name, options, defaultValue }: any) {
       <select
         name={name}
         defaultValue={defaultValue}
-        className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+        className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none capitalize"
       >
         <option value="">Select</option>
         {options.map((o: string) => (
